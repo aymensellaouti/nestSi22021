@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { Todo } from './models/todo';
 import { TodoStatusEnum } from './enums/TodoStatusEnum';
 import { v4 as uuidv4 } from 'uuid';
@@ -33,5 +33,14 @@ export class TodoController {
     todo.id = uuidv4();
     this.todos.push(todo);
     return todo;
+  }
+
+  @Get(':id')
+  getTodoById(
+    @Param('id') id: string
+  ): Todo {
+    return this.todos.find(
+      (todo) => todo.id === id
+    );
   }
 }
