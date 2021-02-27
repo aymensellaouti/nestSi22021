@@ -1,37 +1,23 @@
 import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Put } from '@nestjs/common';
 import { Todo } from './models/todo';
-import { TodoStatusEnum } from './enums/TodoStatusEnum';
-import { v4 as uuidv4 } from 'uuid';
+
+import { AddTodoDto } from './dto/add-todo.dto';
+import { UpdateTodoDto } from './dto/update-todo.dto';
+import { TodoService } from './todo.service';
 
 @Controller('todo')
 export class TodoController {
-  todos: Todo [] = [];
 
+  constructor(private todoService: TodoService) {}
   @Get('')
   getTodos(): Todo[] {
-    return this.todos;
+    return this.todoService.getTodos();
   }
   @Post()
   addTodo(
-    @Body() todoData
+    @Body() todoData: AddTodoDto
   ): Todo {
-    // Destructring
-    const {name, description} = todoData;
-    /*
-    * 1- Récupérer les infos envoyés par le user avec @Body
-    * 2- Créer (instanicer) un todo
-    * 3- Ajouter les infos manquantes
-    * 4- L'ajouter dans le tableau
-    * 5- Retourner l'objet todo crée
-    * */
-    const todo = new Todo();
-    todo.description = description;
-    todo.name = name;
-    todo.date = new Date();
-    todo.status = TodoStatusEnum.waiting;
-    todo.id = uuidv4();
-    this.todos.push(todo);
-    return todo;
+    return this.todoService.addTodo(todoData);
   }
 
   @Get(':id')
@@ -58,24 +44,22 @@ export class TodoController {
   @Put(':id')
   updateTodo(
     @Param('id')id : string,
-    @Body() newTodo: Todo
+    @Body() newTodo: UpdateTodoDto
   ): Todo {
     const todo = this.searchTodo(id);
     todo.description = newTodo.description;
     todo.name = newTodo.name;
-    todo.date = newTodo.date;
     todo.status = newTodo.status;
     return todo;
   }
   @Patch(':id')
   patchTodo(
     @Param('id')id : string,
-    @Body() newTodo: Partial<Todo>
+    @Body() newTodo: Partial<UpdateTodoDto>
   ): Todo {
     const todo = this.searchTodo(id);
     todo.description = newTodo.description ?? todo.description;
     todo.name = newTodo.name ?? todo.name;
-    todo.date = newTodo.date ?? todo.date;
     todo.status = newTodo.status ?? todo.status;
     return todo;
   }
