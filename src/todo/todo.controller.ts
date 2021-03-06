@@ -16,6 +16,7 @@ import { Todo } from './models/todo';
 import { AddTodoDto } from './dto/add-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
 import { TodoService } from './todo.service';
+import { ProcessTodoPipe } from './process-todo.pipe';
 
 @Controller('todo')
 
@@ -33,7 +34,7 @@ export class TodoController {
   }
   @Post()
   addTodo(
-    @Body() todoData: AddTodoDto
+    @Body(ProcessTodoPipe) todoData: AddTodoDto
   ): Todo {
     return this.todoService.addTodo(todoData);
   }
