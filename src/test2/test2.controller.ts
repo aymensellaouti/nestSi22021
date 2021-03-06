@@ -1,5 +1,6 @@
-import { Controller, Get, HttpStatus, Param, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
 import { TodoService } from '../todo/todo.service';
+import { TestDto } from './dtos/test.dto';
 
 @Controller('test2')
 export class Test2Controller {
@@ -12,5 +13,12 @@ export class Test2Controller {
     console.log(id);
     console.log(typeof(id));
     return this.todoService.getTodos().length;
+  }
+
+  @Post()
+  testValdiator(
+    @Body() data: TestDto
+  ) {
+    return data;
   }
 }
