@@ -4,9 +4,17 @@ import { TodoStatusEnum } from './enums/TodoStatusEnum';
 import { AddTodoDto } from './dto/add-todo.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { UpdateTodoDto } from './dto/update-todo.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { TodoEntity } from './entities/todo.entity';
+import { Repository } from 'typeorm';
 @Injectable()
 export class TodoService {
   todos: Todo [] = [];
+
+  constructor(
+    @InjectRepository(TodoEntity)
+    private readonly todoRepository: Repository<TodoEntity>
+  ) {}
 
   searchTodo(id): Todo {
     const todo: Todo =  this.todos.find(
@@ -22,7 +30,12 @@ export class TodoService {
     return this.todos;
   }
 
-  addTodo(todoData: AddTodoDto) {
+  async addTodo(todoData: AddTodoDto) {
+      // return f();
+      return await this.todoRepository.save(todoData);
+  }
+
+    addFakeTodo(todoData: AddTodoDto) {
     // Destructring
     const {name, description} = todoData;
     /*
@@ -46,15 +59,21 @@ export class TodoService {
     return this.searchTodo(id);
   }
 
-  deleteTodo(id: string): {message: string} {
-    const size = this.todos.length;
-    this.todos = this.todos.filter(
-      (todo) => todo.id != id
-    );
-    if (size === this.todos.length) {
-      throw new NotFoundException(`le todo d'id ${id} n'existe pas`);
+  async deleteTodo(id: string): Promise<unknown> {
+    const deletedTodo = await this.todoRepository.delete(id);
+    if(! deletedTodo) {
+      throw new NotFoundException(`Le todo d'id ${id} n'existe pas`);
+    } else {
+      return deletedTodo;
     }
-    return {message: `le todo d'id ${id} a été supprimé avec succès`};
+  }
+  async deleteTodoByCreterias(criterias): Promise<unknown> {
+    const deletedTodo = await this.todoRepository.delete({ ...criterias });
+    if(! deletedTodo) {
+      throw new NotFoundException(`Aucun Todo trouvé`);
+    } else {
+      return deletedTodo;
+    }
   }
 
   patchTodo(id: string, newTodo: Partial<UpdateTodoDto>): Todo {
@@ -65,12 +84,17 @@ export class TodoService {
     return todo;
   }
 
-  putTodo(id: string, newTodo: UpdateTodoDto): Todo {
-    const todo = this.searchTodo(id);
-    todo.description = newTodo.description;
-    todo.name = newTodo.name;
-    todo.status = newTodo.status;
-    return todo;
+  async putTodo(id: string, newTodo: UpdateTodoDto): Promise<TodoEntity> {
+    const updatedTodo = await this.todoRepository.preload({
+      id,
+      ...newTodo
+  });
+    console.log('Valeur de retour de preload : ', updatedTodo);
+  if (! updatedTodo) {
+    throw new NotFoundException(`Le todo d'id ${id} n'existe pas`);
+  } else {
+    return await this.todoRepository.save(updatedTodo);
+  }
   }
 
 }

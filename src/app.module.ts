@@ -20,7 +20,7 @@ import { TodoEntity } from './todo/entities/todo.entity';
       username: 'root',
       password: '',
       database: 'si2Nest2021',
-      entities: [TodoEntity],
+      entities: ["dist/**/*.entity.{js,ts}"],
       synchronize: true,
       logging: true
   })],
