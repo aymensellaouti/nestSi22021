@@ -11,7 +11,6 @@ export class TodoEntity extends TimestampEntity{
   })
   name: string;
   @Column({
-    type: 'varchar',
     length: 255
   })
   description: string;

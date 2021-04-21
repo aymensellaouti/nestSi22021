@@ -29,10 +29,17 @@ export class TodoController {
   getTodos(
     @Query('page', new DefaultValuePipe(1)) page: number,
     @Query('nbre', new DefaultValuePipe(10)) nbre: number,
-  ): Todo[] {
-    console.log('page', page);
-    console.log('nbre', nbre);
-    return this.todoService.getTodos();
+  ): Promise<TodoEntity[]> {
+
+    return this.todoService.getTodos(page, nbre);
+  }
+  @Get('name/:name')
+  getTodosByName(
+    @Param('name') name: string,
+    @Query('page', new DefaultValuePipe(1)) page: number,
+    @Query('nbre', new DefaultValuePipe(10)) nbre: number,
+  ): Promise<TodoEntity[]> {
+    return this.todoService.getTodosName(name);
   }
   @Post()
   addTodo(
@@ -54,11 +61,26 @@ export class TodoController {
   ): Promise<unknown> {
     return this.todoService.deleteTodoByCreterias(criterias);
   }
+
+  @Delete('soft/:id')
+  softDeleteTodo(
+    @Param('id') id: string
+  ): Promise<unknown> {
+    return this.todoService.softDelete(id);
+  }
+
   @Delete('criteria')
   deleteTodoByCriteria(
     @Param('id') id: string
   ): Promise<unknown> {
     return this.todoService.deleteTodo(id);
+  }
+
+  @Post('restore/:id')
+  restoreTodo(
+    @Param('id') id: string
+  ): Promise<unknown> {
+    return this.todoService.restoreTodo(id);
   }
 
   @Put(':id')
@@ -75,6 +97,9 @@ export class TodoController {
   ): Todo {
     return this.todoService.patchTodo(id, newTodo);
   }
-
+  @Get('stats/status')
+  statsTodoStatus() {
+    return this.todoService.statusStats();
+  }
 
 }

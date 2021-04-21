@@ -26,8 +26,15 @@ export class TodoService {
     return todo;
   }
 
-  getTodos(): Todo[] {
-    return this.todos;
+  async getTodos(page: number, nbre: number): Promise<TodoEntity[]> {
+    return await this.todoRepository.find({
+      skip: (page - 1) * nbre,
+      take: nbre,
+      cache: 10000
+    });
+  }
+  async getTodosName(name): Promise<TodoEntity[]> {
+    return await this.todoRepository.find({name});
   }
 
   async addTodo(todoData: AddTodoDto) {
@@ -97,4 +104,27 @@ export class TodoService {
   }
   }
 
+  async softDelete(id: string) {
+    console.log(id);
+    const softDeletedTodo = await this.todoRepository.softDelete(id);
+    if(! softDeletedTodo) {
+      throw new NotFoundException(`le todo d'id ${id} n'existe pas`);
+    }
+    return softDeletedTodo;
+  }
+
+  async restoreTodo(id: string): Promise<any> {
+    return await this.todoRepository.restore(id);
+  }
+
+  async statusStats() {
+    const nbreEnAttente = await this.todoRepository.count({status: TodoStatusEnum.waiting});
+    const nbreFinalise = await this.todoRepository.count({status: TodoStatusEnum.done});
+    const nbreActif = await this.todoRepository.count({status: TodoStatusEnum.actif});
+    return {
+      actif: nbreActif,
+      finalise: nbreFinalise,
+      enAttente: nbreEnAttente
+    };
+  }
 }
